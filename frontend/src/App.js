@@ -2,47 +2,54 @@
 // File Location: src/App.js
 // Updated with auth routes and initialization
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { initializeAuth } from './services/auth-service';
 import ProtectedRoute from './components/ProtectedRoute';
 import Signup from './pages/Signup';
 import JobTracked from './pages/JobTracked';
 import JobTrackerMain from './pages/JobTrackerMain';
+import Features from './pages/Features';
+import About from './pages/About';
 import './App.css';
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
   // Initialize auth on app start
   useEffect(() => {
-    initializeAuth();
-    // Optional: Create demo account if it doesn't exist
-    createDemoAccount();
+    const init = async () => {
+      await initializeAuth();
+      setLoading(false);
+    };
+    init();
   }, []);
 
-  // Helper function to create a demo account
-  const createDemoAccount = () => {
-    const users = JSON.parse(localStorage.getItem('job_tracker_users')) || [];
-    const demoExists = users.some(u => u.email === 'demo@example.com');
-
-    if (!demoExists) {
-      const demoUser = {
-        id: Date.now(),
-        email: 'demo@example.com',
-        password: 'demo123',
-        name: 'Demo User',
-        createdAt: new Date().toISOString(),
-        jobApplications: []
-      };
-      users.push(demoUser);
-      localStorage.setItem('job_tracker_users', JSON.stringify(users));
-    }
-  };
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: '#0f172a',
+        color: 'white',
+        fontSize: '1.5rem',
+        fontFamily: 'Inter, sans-serif'
+      }}>
+        <div className="spinner" style={{ marginRight: '15px' }}></div>
+        Initializing...
+      </div>
+    );
+  }
 
   return (
     <Router>
       <Routes>
         {/* Landing Page (JobTracked) - Always accessible */}
         <Route path="/" element={<JobTracked />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/about" element={<About />} />
 
         {/* Login/Signup Page */}
         <Route path="/signup" element={<Signup />} />

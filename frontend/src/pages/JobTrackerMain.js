@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import ApplicationList from '../components/ApplicationList';
 import { getCurrentUser, isUserLoggedIn, logoutUser } from '../services/auth-service';
+import { supabase } from '../supabaseClient';
+import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey';
+import * as d3 from 'd3';
 
 function JobTrackerMain() {
   const navigate = useNavigate();
@@ -37,32 +40,26 @@ function JobTrackerMain() {
     salary: ""
   });
 
-  // 💾 NEW: Load applications on mount
+  // 💾 NEW: Load applications on mount from Supabase
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      const users = JSON.parse(localStorage.getItem('job_tracker_users')) || [];
-      const currentUserData = users.find(u => u.id === user.id);
-      if (currentUserData && currentUserData.jobApplications) {
-        setApplications(currentUserData.jobApplications);
-      }
-    }
-  }, []);
+    const fetchApplications = async () => {
+      const user = getCurrentUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from('job_applications')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-  // 💾 NEW: Save applications when they change
-  useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      const users = JSON.parse(localStorage.getItem('job_tracker_users')) || [];
-      const updatedUsers = users.map(u => {
-        if (u.id === user.id) {
-          return { ...u, jobApplications: applications };
+        if (error) {
+          console.error('Error fetching applications:', error);
+        } else {
+          setApplications(data || []);
         }
-        return u;
-      });
-      localStorage.setItem('job_tracker_users', JSON.stringify(updatedUsers));
-    }
-  }, [applications]);
+      }
+    };
+
+    fetchApplications();
+  }, []);
 
   // Enhanced CSS styles embedded in the component
   const styles = `
@@ -170,7 +167,7 @@ function JobTrackerMain() {
       align-items: center;
       justify-content: space-between;
       padding: var(--space-4) var(--space-6);
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
@@ -286,8 +283,9 @@ function JobTrackerMain() {
     .main-content {
       position: relative;
       z-index: 10;
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
+      padding: 0 1.5rem;
     }
 
     .header {
@@ -1119,25 +1117,54 @@ function JobTrackerMain() {
     /* Kanban Board */
     .kanban-container {
       display: flex;
-      gap: 1rem;
-      height: 60vh;
+      gap: 1.25rem;
+      height: 75vh;
       margin-top: 2rem;
-      padding: 1rem;
-      background: white;
+      padding: 1.5rem;
+      background: #f1f5f9;
       border: 1px solid var(--gray-200);
-      border-radius: var(--radius-2xl);
-      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      width: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-300) transparent;
+      scroll-behavior: smooth;
+    }
+
+    .kanban-container::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .kanban-container::-webkit-scrollbar-thumb {
+      background: var(--primary-300);
+      border-radius: 10px;
+    }
+
+    .kanban-container::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .kanban-container::-webkit-scrollbar-thumb {
+      background: var(--primary-200);
+      border-radius: 10px;
     }
 
     .kanban-column {
-      flex: 1;
-      background: var(--gray-50);
+      flex: 0 0 280px;
+      background: #ffffff;
       border: 1px solid var(--gray-200);
       border-radius: var(--radius-xl);
-      padding: 1rem;
+      padding: 1.25rem;
       display: flex;
       flex-direction: column;
       height: 100%;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      transition: background-color 0.2s ease;
+    }
+
+    .drop-target {
+      background-color: #f8fafc !important;
     }
 
     .kanban-column-header {
@@ -1277,22 +1304,142 @@ function JobTrackerMain() {
         padding: 0.75rem 0.5rem;
       }
     }
+
+    .analytics-section {
+      background: #f1f5f9;
+      border-radius: 32px;
+      padding: 4rem 2rem;
+      margin: 4rem 0;
+      position: relative;
+    }
+
+    .analytics-header {
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+
+    .analytics-header h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .sankey-wrapper {
+      height: 600px;
+      width: 100%;
+      position: relative;
+    }
+
+    .sankey-node-label {
+      font-family: 'Inter', sans-serif;
+      pointer-events: none;
+    }
+
+    .sankey-node-name {
+      font-size: 14px;
+      font-weight: 600;
+      fill: #1e293b;
+    }
+
+    .sankey-node-value {
+      font-size: 24px;
+      font-weight: 800;
+      fill: #1e293b;
+    }
+
+    .recharts-sankey-link:hover {
+      stroke-opacity: 0.8 !important;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 1024px) {
+      .main-content {
+        max-width: 100%;
+        padding: 0 1rem;
+      }
+      
+      .kanban-container {
+        height: 65vh;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2.25rem;
+      }
+
+      .stats-bar {
+        gap: 1rem;
+        padding: 0 1rem;
+      }
+
+      .stat-item {
+        flex: 1 1 120px;
+        min-width: 120px;
+        padding: 1rem;
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+      }
+
+      .controls-section {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .analytics-section {
+        padding: 2rem 1rem;
+        margin: 2rem 0;
+      }
+
+      .sankey-wrapper {
+        height: 400px;
+      }
+
+      .kanban-container {
+        padding: 1rem;
+        gap: 1rem;
+      }
+
+      .kanban-column {
+        flex: 0 0 250px;
+      }
+    }
   `;
 
-  const handleDragEnd = (result) => {
+  const handleDragEnd = async (result) => {
     const { source, destination, draggableId } = result;
 
     if (!destination) return;
 
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
-    setApplications(prev =>
-      prev.map(app =>
-        app.id.toString() === draggableId
-          ? { ...app, status: destination.droppableId }
-          : app
-      )
-    );
+    const newStatus = destination.droppableId;
+
+    try {
+      // Optimistic update
+      setApplications(prev =>
+        prev.map(app =>
+          app.id.toString() === draggableId
+            ? { ...app, status: newStatus }
+            : app
+        )
+      );
+
+      const { error } = await supabase
+        .from('job_applications')
+        .update({ status: newStatus })
+        .eq('id', draggableId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating status:', error);
+      showNotification('Failed to update status in database', 'error');
+      // Revert if needed (simplified here)
+    }
   };
 
   // Scroll handler
@@ -1372,7 +1519,7 @@ function JobTrackerMain() {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.title || !form.company) {
@@ -1380,35 +1527,60 @@ function JobTrackerMain() {
       return;
     }
 
-    if (editingApp) {
-      setApplications(applications.map(app =>
-        app.id === editingApp.id ? { ...form, id: editingApp.id } : app
-      ));
-      setEditingApp(null);
-      showNotification('Job application updated successfully!', 'success');
-    } else {
-      const newApp = {
-        ...form,
-        id: Date.now(),
-        created_at: new Date().toISOString()
-      };
-      setApplications([...applications, newApp]);
-      showNotification('Job application added successfully!', 'success');
+    const user = getCurrentUser();
+    if (!user) {
+      showNotification('You must be logged in to save applications!', 'error');
+      return;
     }
 
-    setForm({
-      title: "",
-      company: "",
-      contact: "",
-      email: "",
-      source_url: "",
-      notes: "",
-      status: "Applied",
-      date_applied: new Date().toISOString().split('T')[0],
-      salary: ""
-    });
-    setShowForm(false);
-    setAnimationKey(prev => prev + 1);
+    try {
+      if (editingApp) {
+        const { data, error } = await supabase
+          .from('job_applications')
+          .update({
+            ...form
+          })
+          .eq('id', editingApp.id)
+          .select();
+
+        if (error) throw error;
+
+        setApplications(applications.map(app =>
+          app.id === editingApp.id ? data[0] : app
+        ));
+        setEditingApp(null);
+        showNotification('Job application updated successfully!', 'success');
+      } else {
+        const { data, error } = await supabase
+          .from('job_applications')
+          .insert([
+            { ...form, user_id: user.id }
+          ])
+          .select();
+
+        if (error) throw error;
+
+        setApplications([data[0], ...applications]);
+        showNotification('Job application added successfully!', 'success');
+      }
+
+      setForm({
+        title: "",
+        company: "",
+        contact: "",
+        email: "",
+        source_url: "",
+        notes: "",
+        status: "Applied",
+        date_applied: new Date().toISOString().split('T')[0],
+        salary: ""
+      });
+      setShowForm(false);
+      setAnimationKey(prev => prev + 1);
+    } catch (error) {
+      console.error('Error saving application:', error);
+      showNotification(`Error: ${error.message}`, 'error');
+    }
   };
 
   const handleEdit = (app) => {
@@ -1420,11 +1592,23 @@ function JobTrackerMain() {
     }
   };
 
-  const handleDelete = (app) => {
+  const handleDelete = async (app) => {
     if (window.confirm(`Are you sure you want to delete the application for ${app.title} at ${app.company}?`)) {
-      setApplications(applications.filter(a => a.id !== app.id));
-      showNotification('Job application deleted successfully!', 'success');
-      setAnimationKey(prev => prev + 1);
+      try {
+        const { error } = await supabase
+          .from('job_applications')
+          .delete()
+          .eq('id', app.id);
+
+        if (error) throw error;
+
+        setApplications(applications.filter(a => a.id !== app.id));
+        showNotification('Job application deleted successfully!', 'success');
+        setAnimationKey(prev => prev + 1);
+      } catch (error) {
+        console.error('Error deleting application:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+      }
     }
   };
 
@@ -1454,8 +1638,242 @@ function JobTrackerMain() {
   const stats = {
     total: applications.length,
     applied: applications.filter(app => app.status === 'Applied').length,
-    interview: applications.filter(app => app.status === 'Interview').length,
-    offers: applications.filter(app => app.status === 'Offer').length
+    interview: applications.filter(app => ['Interview', 'Offer', 'Accepted', 'Declined'].includes(app.status)).length,
+    offers: applications.filter(app => ['Offer', 'Accepted', 'Declined'].includes(app.status)).length,
+    accepted: applications.filter(app => app.status === 'Accepted').length,
+    rejected: applications.filter(app => app.status === 'Rejected').length
+  };
+
+
+  const renderAnalytics = () => {
+    // 1. Prepare Data
+    // Reference-accurate colors
+    const nodePalette = {
+      total: '#94a3b8',      // Greyish
+      interviews: '#3b82f6',   // Bright Blue
+      rejected: '#f97316',    // Orange
+      ghosted: '#fb7185',     // Pink-ish Red
+      offers: '#0ea5e9',      // Sky Blue
+      noOffer: '#22c55e',     // Green
+      accepted: '#eab308',    // Gold/Yellow
+      declined: '#a855f7'     // Purple
+    };
+
+    // Counts for display
+    const counts = {
+      total: applications.length,
+      interviews: applications.filter(a => ['Interview', 'Offer', 'Accepted', 'Declined'].includes(a.status)).length,
+      rejected: applications.filter(a => a.status === 'Rejected').length,
+      ghosted: applications.filter(a => a.status === 'Applied').length,
+      offers: applications.filter(a => ['Offer', 'Accepted', 'Declined'].includes(a.status)).length,
+      accepted: applications.filter(a => a.status === 'Accepted').length,
+      declined: applications.filter(a => a.status === 'Declined').length,
+    };
+    counts.noOffer = counts.interviews - counts.offers; // Derived
+
+    const getCompanies = (statusList) => {
+      return applications
+        .filter(a => statusList.includes(a.status))
+        .map(a => a.company)
+        .filter((value, index, self) => self.indexOf(value) === index)
+        .slice(0, 5);
+    };
+
+    // 2. Define Nodes in Strict Layers
+    // Layer 0: Start
+    // Layer 1: First Outcome
+    // Layer 2: Second Outcome
+    // Layer 3: Final Outcome
+    const nodes = [
+      { name: 'Applications', layer: 0, color: nodePalette.total },
+
+      { name: 'Interviews', layer: 1, color: nodePalette.interviews },
+      { name: 'Rejected', layer: 1, color: nodePalette.rejected, companies: getCompanies(['Rejected']) },
+      { name: 'Ghosted', layer: 1, color: nodePalette.ghosted, companies: getCompanies(['Applied']) },
+
+      { name: 'Offers', layer: 2, color: nodePalette.offers, companies: getCompanies(['Offer', 'Accepted', 'Declined']) },
+      { name: 'No Offer', layer: 2, color: nodePalette.noOffer, companies: getCompanies(['Interview']) },
+
+      { name: 'Accepted', layer: 3, color: nodePalette.accepted, companies: getCompanies(['Accepted']) },
+      { name: 'Declined', layer: 3, color: nodePalette.declined, companies: getCompanies(['Declined']) }
+    ];
+
+    // Map names to indices for link creation
+    const nodeMap = new Map(nodes.map((n, i) => [n.name, i]));
+
+    // 3. Generate Links based on individual application paths
+    const links = [];
+
+    applications.forEach(app => {
+      // Path 1: Applications -> Rejected (Layer 0 -> 1)
+      if (app.status === 'Rejected') {
+        links.push({ source: nodeMap.get('Applications'), target: nodeMap.get('Rejected'), value: 1, color: nodePalette.rejected });
+      }
+
+      // Path 2: Applications -> Ghosted (Layer 0 -> 1)
+      if (app.status === 'Applied') {
+        links.push({ source: nodeMap.get('Applications'), target: nodeMap.get('Ghosted'), value: 1, color: nodePalette.ghosted });
+      }
+
+      // Path 3: Applications -> Interviews (Layer 0 -> 1)
+      if (['Interview', 'Offer', 'Accepted', 'Declined', 'No Offer'].includes(app.status)) {
+        // Determine "flow color" based on final outcome
+        let color = nodePalette.interviews;
+        if (app.status === 'Accepted') color = nodePalette.accepted;
+        if (app.status === 'Declined') color = nodePalette.declined;
+        if (app.status === 'Offer') color = nodePalette.offers;
+        if (app.status === 'No Offer') color = nodePalette.noOffer;
+
+        links.push({ source: nodeMap.get('Applications'), target: nodeMap.get('Interviews'), value: 1, color });
+      }
+
+      // Path 4: Interviews -> No Offer (Layer 1 -> 2)
+      if (app.status === 'Interview') {
+        // Only if they stopped at Interview status
+        links.push({ source: nodeMap.get('Interviews'), target: nodeMap.get('No Offer'), value: 1, color: nodePalette.noOffer });
+      }
+
+      // Path 5: Interviews -> Offers (Layer 1 -> 2)
+      if (['Offer', 'Accepted', 'Declined'].includes(app.status)) {
+        let color = nodePalette.offers;
+        if (app.status === 'Accepted') color = nodePalette.accepted;
+        if (app.status === 'Declined') color = nodePalette.declined;
+
+        links.push({ source: nodeMap.get('Interviews'), target: nodeMap.get('Offers'), value: 1, color });
+      }
+
+      // Path 6: Offers -> Final (Layer 2 -> 3)
+      if (app.status === 'Accepted') {
+        links.push({ source: nodeMap.get('Offers'), target: nodeMap.get('Accepted'), value: 1, color: nodePalette.accepted });
+      }
+      if (app.status === 'Declined') {
+        links.push({ source: nodeMap.get('Offers'), target: nodeMap.get('Declined'), value: 1, color: nodePalette.declined });
+      }
+    });
+
+    // 4. Compute Layout utilizing d3-sankey
+    if (nodes.length === 0 || applications.length === 0) return null;
+
+    const width = 1200;
+    const height = 700; // Increased height for better spacing
+    const margin = { top: 40, right: 250, bottom: 100, left: 40 }; // Generous margins to prevent clipping
+
+    const sankeyGenerator = d3Sankey()
+      .nodeWidth(20)
+      .nodePadding(60) // Increased padding between nodes
+      .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
+      .nodeAlign((node, n) => node.layer)
+      .nodeSort(null);
+
+    // D3 modifies data in place, so spread shallow copies
+    const { nodes: sankeyNodes, links: sankeyLinks } = sankeyGenerator({
+      nodes: nodes.map(d => Object.assign({}, d)),
+      links: links.map(d => Object.assign({}, d))
+    });
+
+    return (
+      <div className="analytics-section animate-in">
+        <div className="analytics-header">
+          <h2>Your Journey</h2>
+        </div>
+        <div className="sankey-wrapper" style={{ height: '700px', width: '100%', overflowX: 'auto', overflowY: 'hidden' }}>
+          <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} maintainAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="gradient" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stopColor="#cbd5e1" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#cbd5e1" stopOpacity="0.6" />
+              </linearGradient>
+            </defs>
+            <g>
+              {/* Links */}
+              {sankeyLinks.map((link, i) => {
+                return (
+                  <path
+                    key={i}
+                    d={sankeyLinkHorizontal()(link)}
+                    stroke={link.color || '#cbd5e1'}
+                    strokeWidth={Math.max(link.width, 2)}
+                    fill="none"
+                    strokeOpacity={0.5}
+                    style={{ transition: 'all 0.4s ease', mixBlendMode: 'multiply' }}
+                  >
+                    <title>{`${link.source.name} → ${link.target.name}\n${link.value} Applications`}</title>
+                  </path>
+                );
+              })}
+
+              {/* Nodes */}
+              {sankeyNodes.map((node, i) => {
+                // Determine display count
+                let displayValue = 0;
+                switch (node.name) {
+                  case 'Applications': displayValue = counts.total; break;
+                  case 'Interviews': displayValue = counts.interviews; break;
+                  case 'Rejected': displayValue = counts.rejected; break;
+                  case 'Ghosted': displayValue = counts.ghosted; break;
+                  case 'Offers': displayValue = counts.offers; break;
+                  case 'No Offer': displayValue = counts.noOffer; break;
+                  case 'Accepted': displayValue = counts.accepted; break;
+                  case 'Declined': displayValue = counts.declined; break;
+                }
+
+                const isLeft = node.x0 < width / 2;
+                const companies = node.companies || [];
+
+                return (
+                  <g key={i}>
+                    <rect
+                      x={node.x0}
+                      y={node.y0}
+                      width={node.x1 - node.x0}
+                      height={node.y1 - node.y0}
+                      fill={node.color}
+                      rx={4}
+                      ry={4}
+                      fillOpacity={0.9}
+                    >
+                      <title>{`${node.name}: ${displayValue}`}</title>
+                    </rect>
+
+                    {/* Label */}
+                    <text
+                      x={isLeft ? node.x1 + 15 : node.x0 - 15}
+                      y={(node.y1 + node.y0) / 2}
+                      dy="-0.5em"
+                      textAnchor={isLeft ? "start" : "end"}
+                      fill="#1e293b"
+                      style={{ fontWeight: 'bold', pointerEvents: 'none' }}
+                    >
+                      <tspan style={{ fontSize: '28px', fontWeight: '900', fill: node.color }}>{displayValue}</tspan>
+                      <tspan dx="8" style={{ fontSize: '16px', fill: '#475569', fontWeight: '700' }}>{node.name}</tspan>
+                    </text>
+
+                    {/* Company List */}
+                    {companies.length > 0 && (
+                      <g transform={`translate(${isLeft ? node.x1 + 15 : node.x0 - 15}, ${(node.y1 + node.y0) / 2 + 15})`}>
+                        {companies.map((co, idx) => (
+                          <text
+                            key={idx}
+                            y={idx * 16}
+                            textAnchor={isLeft ? "start" : "end"}
+                            style={{ fontSize: '13px', fill: '#64748b', fontWeight: '500' }}
+                          >
+                            {isLeft ? `${co}` : `${co}`}
+                          </text>
+                        ))}
+                        {companies.length === 5 && (
+                          <text y={5 * 16} textAnchor={isLeft ? "start" : "end"} style={{ fontSize: '11px', fill: '#94a3b8' }}>...</text>
+                        )}
+                      </g>
+                    )}
+                  </g>
+                );
+              })}
+            </g>
+          </svg>
+        </div>
+      </div>
+    );
   };
 
   // Render application card
@@ -1561,7 +1979,7 @@ function JobTrackerMain() {
 
   // Render Kanban view
   const renderKanbanView = () => {
-    const statuses = ['Applied', 'Interview', 'Offer', 'Rejected'];
+    const statuses = ['Applied', 'Interview', 'Offer', 'Accepted', 'Declined', 'Rejected'];
 
     return (
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -1631,17 +2049,13 @@ function JobTrackerMain() {
 
           <div className={`nav-menu ${isMobileMenuOpen ? 'open' : ''}`}>
             <Link to="/" className="nav-link">Home</Link>
-            <button className="nav-link" onClick={() => scrollToSection('features')}>
-              Features
-            </button>
-            <button className="nav-link" onClick={() => scrollToSection('about')}>
-              About
-            </button>
+            <Link to="/features" className="nav-link">Features</Link>
+            <Link to="/about" className="nav-link">About</Link>
             {isUserLoggedIn() ? (
               <button
                 className="btn btn-primary"
-                onClick={() => {
-                  logoutUser();
+                onClick={async () => {
+                  await logoutUser();
                   navigate('/');
                 }}
               >
@@ -1691,7 +2105,7 @@ function JobTrackerMain() {
           <div className="stats-bar">
             <div className="stat-item">
               <span className="stat-number">{stats.total}</span>
-              <span className="stat-label">Total Applications</span>
+              <span className="stat-label">Total</span>
             </div>
             <div className="stat-item">
               <span className="stat-number">{stats.applied}</span>
@@ -1704,6 +2118,14 @@ function JobTrackerMain() {
             <div className="stat-item">
               <span className="stat-number">{stats.offers}</span>
               <span className="stat-label">Offers</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number" style={{ color: 'var(--success-500)' }}>{stats.accepted}</span>
+              <span className="stat-label">Accepted</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number" style={{ color: 'var(--error-500)' }}>{stats.rejected}</span>
+              <span className="stat-label">Rejected</span>
             </div>
           </div>
 
@@ -1878,6 +2300,8 @@ function JobTrackerMain() {
                     <option value="Applied">Applied</option>
                     <option value="Interview">Interview</option>
                     <option value="Offer">Offer</option>
+                    <option value="Accepted">Accepted</option>
+                    <option value="Declined">Declined</option>
                     <option value="Rejected">Rejected</option>
                   </select>
                 </div>
@@ -1918,6 +2342,9 @@ function JobTrackerMain() {
 
           {/* 🎯 CONDITIONAL RENDERING: Kanban or List View */}
           {viewMode === 'kanban' ? renderKanbanView() : renderListView()}
+
+          {/* 🎯 ANALYTICS SECTION */}
+          {renderAnalytics()}
         </div>
       </div>
 

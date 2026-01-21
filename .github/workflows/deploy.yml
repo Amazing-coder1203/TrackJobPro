@@ -20,7 +20,7 @@ jobs:
         run: |
           cd frontend
           npm install
-          CI=false npm run build
+          CI=false REACT_APP_SUPABASE_URL=${{ secrets.REACT_APP_SUPABASE_URL }} REACT_APP_SUPABASE_ANON_KEY=${{ secrets.REACT_APP_SUPABASE_ANON_KEY }} npm run build
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4

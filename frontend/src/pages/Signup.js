@@ -97,15 +97,15 @@ const Signup = () => {
 
       if (isLogin) {
         // Login logic
-        result = loginUser(formData.email, formData.password);
+        result = await loginUser(formData.email, formData.password);
       } else {
         // Register logic
-        result = registerUser(formData.email, formData.password, formData.name);
+        result = await registerUser(formData.email, formData.password, formData.name);
       }
 
       if (result.success) {
         setMessage(`✅ ${result.message}`);
-        
+
         // Clear form
         setFormData({
           name: '',
@@ -270,26 +270,6 @@ const Signup = () => {
           </p>
         </div>
 
-        {/* Demo Credentials */}
-        {isLogin && (
-          <div className="demo-credentials">
-            <p>🧪 Demo Account:</p>
-            <code>Email: demo@example.com | Password: demo123</code>
-            <button
-              type="button"
-              className="demo-button"
-              onClick={() => {
-                setFormData({
-                  ...formData,
-                  email: 'demo@example.com',
-                  password: 'demo123'
-                });
-              }}
-            >
-              Fill Demo Credentials
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

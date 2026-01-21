@@ -268,14 +268,14 @@ const JobTracked = () => {
           </div>
 
           <div className={`nav-menu ${isMobileMenuOpen ? 'open' : ''}`}>
-            <button className="nav-link" onClick={() => scrollToSection('features')}>
+            <button className="nav-link" onClick={() => navigate('/features')}>
               Features
             </button>
             <button className="nav-link" onClick={() => scrollToSection('how-it-works')}>
               How It Works
             </button>
-            <button className="nav-link" onClick={() => scrollToSection('pricing')}>
-              Pricing
+            <button className="nav-link" onClick={() => navigate('/about')}>
+              About
             </button>
 
             {isUserLoggedIn() ? (
@@ -288,8 +288,8 @@ const JobTracked = () => {
                 </button>
                 <button
                   className="btn btn-primary"
-                  onClick={() => {
-                    logoutUser();
+                  onClick={async () => {
+                    await logoutUser();
                     navigate('/');
                   }}
                 >
@@ -594,53 +594,72 @@ const JobTracked = () => {
       </section>
 
       {/* Footer */}
-      <footer className="footer">
+      <footer className="footer" id="about">
         <div className="container">
           <div className="footer-content">
             <div className="footer-brand">
               <div className="footer-logo">
                 <div className="logo-icon">
                   <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <rect x="4" y="6" width="24" height="3" rx="1.5" fill="url(#gradient1)" />
-                    <rect x="4" y="12" width="18" height="3" rx="1.5" fill="url(#gradient1)" />
-                    <rect x="4" y="18" width="20" height="3" rx="1.5" fill="url(#gradient1)" />
-                    <rect x="4" y="24" width="16" height="3" rx="1.5" fill="url(#gradient1)" />
+                    <rect x="4" y="6" width="24" height="3" rx="1.5" fill="url(#gradient-footer)" />
+                    <rect x="4" y="12" width="18" height="3" rx="1.5" fill="url(#gradient-footer)" />
+                    <rect x="4" y="18" width="20" height="3" rx="1.5" fill="url(#gradient-footer)" />
+                    <rect x="4" y="24" width="16" height="3" rx="1.5" fill="url(#gradient-footer)" />
+                    <defs>
+                      <linearGradient id="gradient-footer" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#818cf8" />
+                        <stop offset="100%" stopColor="#c084fc" />
+                      </linearGradient>
+                    </defs>
                   </svg>
                 </div>
                 <span>Job Tracked</span>
               </div>
-              <p>Empowering job seekers to land their dream careers through intelligent application management.</p>
+              <p>The all-in-one job application tracker designed for modern professionals. Stay organized, stay ahead, and land your next big role with confidence.</p>
+              <div className="footer-socials">
+                <a href="#" className="social-link" title="Twitter">𝕏</a>
+                <a href="#" className="social-link" title="LinkedIn">in</a>
+                <a href="#" className="social-link" title="GitHub">hub</a>
+                <a href="#" className="social-link" title="Discord">dis</a>
+              </div>
             </div>
+
             <div className="footer-links">
-              <div className="link-group">
-                <h4>Product</h4>
-                <a href="#features">Features</a>
-                <a href="#pricing">Pricing</a>
-                <a href="#integrations">Integrations</a>
-                <a href="#api">API</a>
-              </div>
-              <div className="link-group">
-                <h4>Company</h4>
-                <a href="#about">About</a>
-                <a href="#careers">Careers</a>
-                <a href="#blog">Blog</a>
-                <a href="#press">Press</a>
-              </div>
-              <div className="link-group">
-                <h4>Support</h4>
-                <a href="#help">Help Center</a>
-                <a href="#contact">Contact</a>
-                <a href="#status">Status</a>
-                <a href="#security">Security</a>
-              </div>
+              <h4>Product</h4>
+              <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">Workflow</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="/tracker">Dashboard</a></li>
+              </ul>
+            </div>
+
+            <div className="footer-links">
+              <h4>Resources</h4>
+              <ul>
+                <li><a href="#">Documentation</a></li>
+                <li><a href="#">Job Search Tips</a></li>
+                <li><a href="#">Resume Guide</a></li>
+                <li><a href="#">Blog</a></li>
+              </ul>
+            </div>
+
+            <div className="footer-links">
+              <h4>Legal</h4>
+              <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Use</a></li>
+                <li><a href="#">Cookie Policy</a></li>
+                <li><a href="#">Security</a></li>
+              </ul>
             </div>
           </div>
+
           <div className="footer-bottom">
-            <p>&copy; 2025 Job Tracked. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Job Tracked. Built with 🚀 for job seekers everywhere.</p>
             <div className="footer-bottom-links">
-              <a href="#privacy">Privacy Policy</a>
-              <a href="#terms">Terms of Service</a>
-              <a href="#cookies">Cookie Policy</a>
+              <a href="#">Status</a>
+              <a href="#">Sitemap</a>
             </div>
           </div>
         </div>
