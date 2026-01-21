@@ -1660,16 +1660,16 @@ function JobTrackerMain() {
 
   const renderAnalytics = () => {
     // 1. Prepare Data
-    // Reference-accurate colors
+    // Semantic color palette based on status meaning
     const nodePalette = {
-      total: '#94a3b8',      // Greyish
-      interviews: '#3b82f6',   // Bright Blue
-      rejected: '#f97316',    // Orange
-      ghosted: '#fb7185',     // Pink-ish Red
-      offers: '#0ea5e9',      // Sky Blue
-      noOffer: '#22c55e',     // Green
-      accepted: '#eab308',    // Gold/Yellow
-      declined: '#a855f7'     // Purple
+      total: '#64748b',        // Slate grey for starting point
+      interviews: '#3b82f6',   // Blue for in-progress/interviews
+      rejected: '#ef4444',     // Red for rejected
+      ghosted: '#f97316',      // Orange for ghosted (less severe than rejected)
+      offers: '#eab308',       // Gold/Yellow for pending offers
+      noOffer: '#f87171',      // Light red for no offer (rejection after interview)
+      accepted: '#22c55e',     // Green for accepted (success!)
+      declined: '#a855f7'      // Purple for declined by user
     };
 
     // Counts for display
