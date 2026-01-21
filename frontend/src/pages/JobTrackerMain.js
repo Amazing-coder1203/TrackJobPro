@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import ApplicationList from '../components/ApplicationList';
-import { getCurrentUser } from '../services/auth-service';
+import { getCurrentUser, isUserLoggedIn, logoutUser } from '../services/auth-service';
 
 function JobTrackerMain() {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [editingApp, setEditingApp] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
@@ -1631,18 +1632,32 @@ function JobTrackerMain() {
             <button className="nav-link" onClick={() => scrollToSection('about')}>
               About
             </button>
-            <button
-              className="btn btn-outline"
-              onClick={(e) => handleButtonClick(e, 'signin')}
-            >
-              Sign In
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={(e) => handleButtonClick(e, 'signup')}
-            >
-              Sign Up
-            </button>
+            {isUserLoggedIn() ? (
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  logoutUser();
+                  navigate('/');
+                }}
+              >
+                Log Out
+              </button>
+            ) : (
+              <>
+                <button
+                  className="btn btn-outline"
+                  onClick={(e) => handleButtonClick(e, 'signin')}
+                >
+                  Sign In
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={(e) => handleButtonClick(e, 'signup')}
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
 
           <div

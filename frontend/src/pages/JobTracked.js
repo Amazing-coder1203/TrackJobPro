@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { isUserLoggedIn, logoutUser } from '../services/auth-service';
 import '../App.css';
 
 const JobTracked = () => {
@@ -7,7 +8,7 @@ const JobTracked = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [counters, setCounters] = useState({ users: 0, applications: 0, interviews: 0 });
   const [visibleElements, setVisibleElements] = useState(new Set());
-  
+
   const heroRef = useRef(null);
   const featuresRef = useRef(null);
   const demoRef = useRef(null);
@@ -86,7 +87,7 @@ const JobTracked = () => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       setIsScrolled(scrollTop > 50);
-      
+
       // Parallax effect for floating cards
       const floatingCards = document.querySelectorAll('.floating-card');
       floatingCards.forEach((card, index) => {
@@ -107,7 +108,7 @@ const JobTracked = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setVisibleElements(prev => new Set(prev).add(entry.target.dataset.animate));
-            
+
             // Start counter animation for stats
             if (entry.target.dataset.animate === 'stats' && !visibleElements.has('stats')) {
               animateCounters();
@@ -138,19 +139,19 @@ const JobTracked = () => {
     const targets = { users: 50, applications: 2000, interviews: 73 };
     const duration = 2000;
     const increment = 50;
-    
+
     Object.keys(targets).forEach(key => {
       let current = 0;
       const target = targets[key];
       const step = target / (duration / increment);
-      
+
       const timer = setInterval(() => {
         current += step;
         if (current >= target) {
           current = target;
           clearInterval(timer);
         }
-        
+
         setCounters(prev => ({
           ...prev,
           [key]: Math.floor(current)
@@ -187,7 +188,7 @@ const JobTracked = () => {
     button.appendChild(ripple);
 
     setTimeout(() => ripple.remove(), 600);
-    
+
     // // Handle specific actions
     // if (action === 'signup') {
     //   showNotification('🎉 Welcome! Sign up functionality coming soon!', 'success');
@@ -203,13 +204,13 @@ const JobTracked = () => {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
-    
+
     const colors = {
       success: '#10B981',
       error: '#EF4444',
       info: '#3B82F6'
     };
-    
+
     notification.style.cssText = `
       position: fixed;
       top: 100px;
@@ -226,7 +227,7 @@ const JobTracked = () => {
       opacity: 0;
       animation: slideIn 0.5s ease-out forwards, slideOut 0.3s ease-in 2.7s forwards;
     `;
-    
+
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
   };
@@ -251,21 +252,21 @@ const JobTracked = () => {
           <div className="nav-brand">
             <div className="logo-icon">
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <rect x="4" y="6" width="24" height="3" rx="1.5" fill="url(#gradient1)"/>
-                <rect x="4" y="12" width="18" height="3" rx="1.5" fill="url(#gradient1)"/>
-                <rect x="4" y="18" width="20" height="3" rx="1.5" fill="url(#gradient1)"/>
-                <rect x="4" y="24" width="16" height="3" rx="1.5" fill="url(#gradient1)"/>
+                <rect x="4" y="6" width="24" height="3" rx="1.5" fill="url(#gradient1)" />
+                <rect x="4" y="12" width="18" height="3" rx="1.5" fill="url(#gradient1)" />
+                <rect x="4" y="18" width="20" height="3" rx="1.5" fill="url(#gradient1)" />
+                <rect x="4" y="24" width="16" height="3" rx="1.5" fill="url(#gradient1)" />
                 <defs>
                   <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#667eea"/>
-                    <stop offset="100%" stopColor="#764ba2"/>
+                    <stop offset="0%" stopColor="#667eea" />
+                    <stop offset="100%" stopColor="#764ba2" />
                   </linearGradient>
                 </defs>
               </svg>
             </div>
             <span className="brand-name">Job Tracked</span>
           </div>
-          
+
           <div className={`nav-menu ${isMobileMenuOpen ? 'open' : ''}`}>
             <button className="nav-link" onClick={() => scrollToSection('features')}>
               Features
@@ -276,22 +277,45 @@ const JobTracked = () => {
             <button className="nav-link" onClick={() => scrollToSection('pricing')}>
               Pricing
             </button>
-            <button
-              className="btn btn-outline"
-              onClick={() => navigate("/signin")}
-              >
-              Sign In
-            </button>
 
-            <button 
-              className="btn btn-primary"
-              onClick={(e) => handleButtonClick(e, 'signup')}
-            >
-              Get Started
-            </button>
+            {isUserLoggedIn() ? (
+              <>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => navigate('/tracker')}
+                >
+                  Dashboard
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    logoutUser();
+                    navigate('/');
+                  }}
+                >
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => navigate("/signin")}
+                >
+                  Sign In
+                </button>
+
+                <button
+                  className="btn btn-primary"
+                  onClick={(e) => handleButtonClick(e, 'signup')}
+                >
+                  Get Started
+                </button>
+              </>
+            )}
           </div>
-          
-          <div 
+
+          <div
             className={`nav-toggle ${isMobileMenuOpen ? 'open' : ''}`}
             onClick={toggleMobileMenu}
           >
@@ -303,8 +327,8 @@ const JobTracked = () => {
       </nav>
 
       {/* Hero Section */}
-      <section 
-        className="hero" 
+      <section
+        className="hero"
         ref={heroRef}
         data-animate="hero"
       >
@@ -315,7 +339,7 @@ const JobTracked = () => {
             <div className="floating-card card-3"></div>
           </div>
         </div>
-        
+
         <div className="container">
           <div className="hero-content">
             <div className="hero-text">
@@ -323,13 +347,13 @@ const JobTracked = () => {
                 <span className="title-line">Transform Your</span>
                 <span className="title-line gradient-text">Job Search Journey</span>
               </h1>
-              
+
               <p className={`hero-description ${visibleElements.has('hero') ? 'animate-in delay-200' : ''}`}>
-                Stop losing track of opportunities. Our intelligent platform helps you organize applications, 
+                Stop losing track of opportunities. Our intelligent platform helps you organize applications,
                 track progress, and land your dream job 3x faster with powerful analytics and automation.
               </p>
-              
-              <div 
+
+              <div
                 className={`hero-stats ${visibleElements.has('hero') ? 'animate-in delay-400' : ''}`}
                 ref={statsRef}
                 data-animate="stats"
@@ -339,7 +363,7 @@ const JobTracked = () => {
                   <span className="stat-label">Job Seekers</span>
                 </div>
                 <div className="stat-item">
-                  <span className="stat-number">{counters.applications >= 1000 ? `${(counters.applications/1000).toFixed(1)}M+` : `${counters.applications}+`}</span>
+                  <span className="stat-number">{counters.applications >= 1000 ? `${(counters.applications / 1000).toFixed(1)}M+` : `${counters.applications}+`}</span>
                   <span className="stat-label">Applications Tracked</span>
                 </div>
                 <div className="stat-item">
@@ -347,29 +371,29 @@ const JobTracked = () => {
                   <span className="stat-label">Interview Rate</span>
                 </div>
               </div>
-              
+
               <div className={`hero-buttons ${visibleElements.has('hero') ? 'animate-in delay-600' : ''}`}>
-                <button 
+                <button
                   className="btn btn-primary btn-large"
                   onClick={(e) => handleButtonClick(e, 'signup')}
                 >
                   Start Tracking Free
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M4 10h12M12 6l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
-                <button 
+                <button
                   className="btn btn-ghost btn-large"
                   onClick={(e) => handleButtonClick(e, 'demo')}
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M8 5l7 5-7 5V5z" fill="currentColor"/>
+                    <path d="M8 5l7 5-7 5V5z" fill="currentColor" />
                   </svg>
                   Watch Demo
                 </button>
               </div>
             </div>
-            
+
             <div className="hero-visual">
               <div className={`dashboard-preview ${visibleElements.has('hero') ? 'animate-in delay-800' : ''}`}>
                 <div className="dashboard-header">
@@ -382,7 +406,7 @@ const JobTracked = () => {
                     <button className="action-btn">+ Add Job</button>
                   </div>
                 </div>
-                
+
                 <div className="dashboard-content">
                   <div className="progress-cards">
                     <div className="progress-card applied">
@@ -391,7 +415,7 @@ const JobTracked = () => {
                         <span className="card-count">12</span>
                       </div>
                       <div className="progress-bar">
-                        <div className="progress-fill" style={{width: '60%'}}></div>
+                        <div className="progress-fill" style={{ width: '60%' }}></div>
                       </div>
                     </div>
                     <div className="progress-card interview">
@@ -400,7 +424,7 @@ const JobTracked = () => {
                         <span className="card-count">5</span>
                       </div>
                       <div className="progress-bar">
-                        <div className="progress-fill" style={{width: '40%'}}></div>
+                        <div className="progress-fill" style={{ width: '40%' }}></div>
                       </div>
                     </div>
                     <div className="progress-card offer">
@@ -409,14 +433,14 @@ const JobTracked = () => {
                         <span className="card-count">2</span>
                       </div>
                       <div className="progress-bar">
-                        <div className="progress-fill" style={{width: '25%'}}></div>
+                        <div className="progress-fill" style={{ width: '25%' }}></div>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="job-list">
                     {jobsMock.map((job, index) => (
-                      <div key={job.id} className="job-item" style={{animationDelay: `${index * 150}ms`}}>
+                      <div key={job.id} className="job-item" style={{ animationDelay: `${index * 150}ms` }}>
                         <div className={`company-logo ${job.logo}`}></div>
                         <div className="job-details">
                           <h4>{job.role}</h4>
@@ -436,8 +460,8 @@ const JobTracked = () => {
       </section>
 
       {/* Features Section */}
-      <section 
-        className="features" 
+      <section
+        className="features"
         id="features"
         ref={featuresRef}
         data-animate="features"
@@ -449,13 +473,13 @@ const JobTracked = () => {
               Powerful tools designed to streamline your job search and maximize your success rate
             </p>
           </div>
-          
+
           <div className="features-grid">
             {features.map((feature, index) => (
-              <div 
-                key={feature.id} 
+              <div
+                key={feature.id}
                 className={`feature-card ${visibleElements.has('features') ? 'animate-in' : ''}`}
-                style={{animationDelay: `${index * 100}ms`}}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="feature-icon">
                   <div className={`icon-${feature.icon}`}></div>
@@ -469,8 +493,8 @@ const JobTracked = () => {
       </section>
 
       {/* Demo Section */}
-      <section 
-        className="demo-section" 
+      <section
+        className="demo-section"
         id="how-it-works"
         ref={demoRef}
         data-animate="demo"
@@ -482,7 +506,7 @@ const JobTracked = () => {
                 See Your Job Search Success Unfold
               </h2>
               <p className={`${visibleElements.has('demo') ? 'animate-in delay-200' : ''}`}>
-                Transform chaos into clarity with our intuitive dashboard. Watch as your applications 
+                Transform chaos into clarity with our intuitive dashboard. Watch as your applications
                 move seamlessly through each stage of your journey.
               </p>
               <div className={`demo-features ${visibleElements.has('demo') ? 'animate-in delay-400' : ''}`}>
@@ -504,7 +528,7 @@ const JobTracked = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="demo-visual">
               <div className={`demo-dashboard ${visibleElements.has('demo') ? 'animate-in delay-600' : ''}`}>
                 <div className="demo-cards-container">
@@ -546,13 +570,13 @@ const JobTracked = () => {
             <h2>Ready to Transform Your Job Search?</h2>
             <p>Join thousands of successful job seekers who found their dream careers faster with Job Tracked</p>
             <div className="cta-buttons">
-              <button 
+              <button
                 className="btn btn-primary btn-large"
                 onClick={(e) => handleButtonClick(e, 'signup')}
               >
                 Get Started Free
               </button>
-              <button 
+              <button
                 className="btn btn-outline btn-large"
                 onClick={(e) => handleButtonClick(e, 'demo')}
               >
@@ -561,7 +585,7 @@ const JobTracked = () => {
             </div>
             <div className="cta-guarantee">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#10B981" strokeWidth="1.5"/>
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#10B981" strokeWidth="1.5" />
               </svg>
               <span>30-day money-back guarantee • No credit card required</span>
             </div>
@@ -577,10 +601,10 @@ const JobTracked = () => {
               <div className="footer-logo">
                 <div className="logo-icon">
                   <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <rect x="4" y="6" width="24" height="3" rx="1.5" fill="url(#gradient1)"/>
-                    <rect x="4" y="12" width="18" height="3" rx="1.5" fill="url(#gradient1)"/>
-                    <rect x="4" y="18" width="20" height="3" rx="1.5" fill="url(#gradient1)"/>
-                    <rect x="4" y="24" width="16" height="3" rx="1.5" fill="url(#gradient1)"/>
+                    <rect x="4" y="6" width="24" height="3" rx="1.5" fill="url(#gradient1)" />
+                    <rect x="4" y="12" width="18" height="3" rx="1.5" fill="url(#gradient1)" />
+                    <rect x="4" y="18" width="20" height="3" rx="1.5" fill="url(#gradient1)" />
+                    <rect x="4" y="24" width="16" height="3" rx="1.5" fill="url(#gradient1)" />
                   </svg>
                 </div>
                 <span>Job Tracked</span>
