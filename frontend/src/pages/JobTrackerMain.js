@@ -6,6 +6,19 @@ import { getCurrentUser, isUserLoggedIn, logoutUser } from '../services/auth-ser
 import { supabase } from '../supabaseClient';
 import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import * as d3 from 'd3';
+import {
+  PencilSquareIcon,
+  TrashIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+  UserIcon,
+  EnvelopeIcon,
+  LinkIcon,
+  XMarkIcon,
+  PlusIcon,
+  ArrowPathIcon,
+  BriefcaseIcon
+} from '@heroicons/react/24/outline';
 
 function JobTrackerMain() {
   const navigate = useNavigate();
@@ -1893,31 +1906,31 @@ function JobTrackerMain() {
         <div className="card-details">
           {app.date_applied && (
             <div className="detail-item">
-              <span>📅</span>
+              <CalendarIcon className="w-4 h-4 text-gray-500 mr-2" />
               <span>Applied: {new Date(app.date_applied).toLocaleDateString()}</span>
             </div>
           )}
           {app.salary && (
             <div className="detail-item">
-              <span>💰</span>
+              <CurrencyDollarIcon className="w-4 h-4 text-gray-500 mr-2" />
               <span>{app.salary}</span>
             </div>
           )}
           {app.contact && (
             <div className="detail-item">
-              <span>👤</span>
+              <UserIcon className="w-4 h-4 text-gray-500 mr-2" />
               <span>{app.contact}</span>
             </div>
           )}
           {app.email && (
             <div className="detail-item">
-              <span>📧</span>
+              <EnvelopeIcon className="w-4 h-4 text-gray-500 mr-2" />
               <span>{app.email}</span>
             </div>
           )}
           {app.source_url && (
             <div className="detail-item">
-              <span>🔗</span>
+              <LinkIcon className="w-4 h-4 text-gray-500 mr-2" />
               <a href={app.source_url} target="_blank" rel="noopener noreferrer"
                 style={{ color: 'var(--primary-600)', textDecoration: 'none' }}>
                 View Posting
@@ -1934,16 +1947,16 @@ function JobTrackerMain() {
 
         <div className="card-actions">
           <button
-            className="btn btn-sm btn-edit"
+            className="btn btn-sm btn-edit flex items-center"
             onClick={() => handleEdit(app)}
           >
-            ✏️ Edit
+            <PencilSquareIcon className="w-4 h-4 mr-1" /> Edit
           </button>
           <button
-            className="btn btn-sm btn-delete"
+            className="btn btn-sm btn-delete flex items-center"
             onClick={() => handleDelete(app)}
           >
-            🗑️ Delete
+            <TrashIcon className="w-4 h-4 mr-1" /> Delete
           </button>
         </div>
       </>
@@ -2041,8 +2054,8 @@ function JobTrackerMain() {
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="nav-container">
           <div className="nav-brand">
-            <div className="logo-icon">
-              <span style={{ fontSize: '2rem' }}>🎯</span>
+            <div className="logo-icon text-indigo-600">
+              <BriefcaseIcon className="w-8 h-8" />
             </div>
             <span className="brand-name">JobTracker</span>
           </div>
@@ -2098,7 +2111,7 @@ function JobTrackerMain() {
           {/* Header */}
           <div className="header">
             <h1>Job Application Tracker</h1>
-            <p>Manage your job search with style 🚀</p>
+            <p>Manage your job search with style</p>
           </div>
 
           {/* Statistics */}
@@ -2200,7 +2213,7 @@ function JobTrackerMain() {
               className="btn btn-primary add-job-btn"
               onClick={() => setShowForm(!showForm)}
             >
-              {showForm ? '✖️ Close Form' : '➕ Add New Job'}
+              {showForm ? <><XMarkIcon className="w-4 h-4 mr-2" /> Close Form</> : <><PlusIcon className="w-4 h-4 mr-2" /> Add New Job</>}
             </button>
           </div>
 
@@ -2209,7 +2222,7 @@ function JobTrackerMain() {
             <div className="form-header">
               <h2>{editingApp ? 'Edit Job Application' : 'Add New Job Application'}</h2>
               <button className="close-form-btn" onClick={handleCancel}>
-                ✖️
+                <XMarkIcon className="w-5 h-5" />
               </button>
             </div>
 
@@ -2333,8 +2346,8 @@ function JobTrackerMain() {
                 <button type="button" className="btn btn-secondary" onClick={handleCancel}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-success">
-                  {editingApp ? '💾 Update Application' : '➕ Add Application'}
+                <button type="submit" className="btn btn-success flex items-center justify-center">
+                  {editingApp ? <><ArrowPathIcon className="w-4 h-4 mr-2" /> Update Application</> : <><PlusIcon className="w-4 h-4 mr-2" /> Add Application</>}
                 </button>
               </div>
             </form>

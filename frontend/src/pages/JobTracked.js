@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isUserLoggedIn, logoutUser } from '../services/auth-service';
+import {
+  ClipboardDocumentCheckIcon,
+  ChartBarIcon,
+  CalendarIcon,
+  DocumentDuplicateIcon,
+  UserGroupIcon,
+  PresentationChartLineIcon,
+  CheckIcon
+} from '@heroicons/react/24/outline';
 import '../App.css';
 
 const JobTracked = () => {
@@ -48,37 +57,37 @@ const JobTracked = () => {
       id: 1,
       title: "Smart Application Tracking",
       description: "Automatically capture job details from any website. Never lose track of where you applied or when to follow up.",
-      icon: "tracking"
+      icon: <ClipboardDocumentCheckIcon className="w-8 h-8" />
     },
     {
       id: 2,
       title: "Progress Visualization",
       description: "See your job search pipeline at a glance. Move applications through stages from 'Applied' to 'Offer' with ease.",
-      icon: "progress"
+      icon: <PresentationChartLineIcon className="w-8 h-8" />
     },
     {
       id: 3,
       title: "Analytics & Insights",
       description: "Get data-driven insights about your job search performance. Identify what's working and optimize your strategy.",
-      icon: "analytics"
+      icon: <ChartBarIcon className="w-8 h-8" />
     },
     {
       id: 4,
       title: "Interview Scheduler",
       description: "Manage interview schedules, set reminders, and prepare with company research tools all in one place.",
-      icon: "calendar"
+      icon: <CalendarIcon className="w-8 h-8" />
     },
     {
       id: 5,
       title: "Document Management",
       description: "Store and organize resumes, cover letters, and portfolio pieces. Access the right version instantly.",
-      icon: "documents"
+      icon: <DocumentDuplicateIcon className="w-8 h-8" />
     },
     {
       id: 6,
       title: "Team Collaboration",
       description: "Share your job search progress with mentors, career coaches, or accountability partners for better support.",
-      icon: "team"
+      icon: <UserGroupIcon className="w-8 h-8" />
     }
   ];
 
@@ -196,7 +205,7 @@ const JobTracked = () => {
     if (action === 'signup') {
       navigate("/tracker");
     } else if (action === 'demo') {
-      showNotification('📹 Demo request received! We\'ll contact you soon.', 'info');
+      showNotification('Demo request received! We\'ll contact you soon.', 'info');
     }
   };
 
@@ -481,8 +490,8 @@ const JobTracked = () => {
                 className={`feature-card ${visibleElements.has('features') ? 'animate-in' : ''}`}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="feature-icon">
-                  <div className={`icon-${feature.icon}`}></div>
+                <div className="feature-icon text-indigo-600 bg-indigo-50 p-3 rounded-lg inline-block mb-4">
+                  {feature.icon}
                 </div>
                 <h3>{feature.title}</h3>
                 <p>{feature.description}</p>
@@ -511,19 +520,27 @@ const JobTracked = () => {
               </p>
               <div className={`demo-features ${visibleElements.has('demo') ? 'animate-in delay-400' : ''}`}>
                 <div className="demo-feature">
-                  <div className="feature-check">✓</div>
+                  <div className="feature-check flex items-center justify-center">
+                    <CheckIcon className="w-4 h-4 text-white" />
+                  </div>
                   <span>One-click job saving from any site</span>
                 </div>
                 <div className="demo-feature">
-                  <div className="feature-check">✓</div>
+                  <div className="feature-check flex items-center justify-center">
+                    <CheckIcon className="w-4 h-4 text-white" />
+                  </div>
                   <span>Automated follow-up reminders</span>
                 </div>
                 <div className="demo-feature">
-                  <div className="feature-check">✓</div>
+                  <div className="feature-check flex items-center justify-center">
+                    <CheckIcon className="w-4 h-4 text-white" />
+                  </div>
                   <span>Real-time progress tracking</span>
                 </div>
                 <div className="demo-feature">
-                  <div className="feature-check">✓</div>
+                  <div className="feature-check flex items-center justify-center">
+                    <CheckIcon className="w-4 h-4 text-white" />
+                  </div>
                   <span>Interview preparation tools</span>
                 </div>
               </div>
@@ -656,7 +673,6 @@ const JobTracked = () => {
           </div>
 
           <div className="footer-bottom">
-            <p>&copy; {new Date().getFullYear()} Job Tracked. Built with 🚀 for job seekers everywhere.</p>
             <div className="footer-bottom-links">
               <a href="#">Status</a>
               <a href="#">Sitemap</a>
