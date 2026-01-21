@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/TrackJobPro/static/css/main.37f376a4.css",
-    "main.js": "/TrackJobPro/static/js/main.0f2af407.js",
+    "main.js": "/TrackJobPro/static/js/main.d6f0248e.js",
     "static/js/453.670e15c7.chunk.js": "/TrackJobPro/static/js/453.670e15c7.chunk.js",
     "static/media/signup_bg.png": "/TrackJobPro/static/media/signup_bg.f58fbc148b9d601f8867.png",
     "index.html": "/TrackJobPro/index.html",
     "main.37f376a4.css.map": "/TrackJobPro/static/css/main.37f376a4.css.map",
-    "main.0f2af407.js.map": "/TrackJobPro/static/js/main.0f2af407.js.map",
+    "main.d6f0248e.js.map": "/TrackJobPro/static/js/main.d6f0248e.js.map",
     "453.670e15c7.chunk.js.map": "/TrackJobPro/static/js/453.670e15c7.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.37f376a4.css",
-    "static/js/main.0f2af407.js"
+    "static/js/main.d6f0248e.js"
   ]
 }
