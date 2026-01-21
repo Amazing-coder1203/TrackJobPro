@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import ApplicationList from '../components/ApplicationList';
+import { getCurrentUser } from '../services/auth-service';
 
 function JobTrackerMain() {
   const [applications, setApplications] = useState([]);
@@ -12,15 +13,15 @@ function JobTrackerMain() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   // 🎯 NEW: View toggle state (kanban or list)
   const [viewMode, setViewMode] = useState('kanban'); // 'kanban' or 'list'
-  
+
   // 🎯 NEW: List view filter states
   const [filterCompany, setFilterCompany] = useState('');
   const [filterRole, setFilterRole] = useState('');
   const [filterDate, setFilterDate] = useState('');
-  
+
   const formRef = useRef(null);
 
   const [form, setForm] = useState({
@@ -34,6 +35,33 @@ function JobTrackerMain() {
     date_applied: new Date().toISOString().split('T')[0],
     salary: ""
   });
+
+  // 💾 NEW: Load applications on mount
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      const users = JSON.parse(localStorage.getItem('job_tracker_users')) || [];
+      const currentUserData = users.find(u => u.id === user.id);
+      if (currentUserData && currentUserData.jobApplications) {
+        setApplications(currentUserData.jobApplications);
+      }
+    }
+  }, []);
+
+  // 💾 NEW: Save applications when they change
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      const users = JSON.parse(localStorage.getItem('job_tracker_users')) || [];
+      const updatedUsers = users.map(u => {
+        if (u.id === user.id) {
+          return { ...u, jobApplications: applications };
+        }
+        return u;
+      });
+      localStorage.setItem('job_tracker_users', JSON.stringify(updatedUsers));
+    }
+  }, [applications]);
 
   // Enhanced CSS styles embedded in the component
   const styles = `
@@ -1462,8 +1490,8 @@ function JobTrackerMain() {
           {app.source_url && (
             <div className="detail-item">
               <span>🔗</span>
-              <a href={app.source_url} target="_blank" rel="noopener noreferrer" 
-                 style={{ color: 'var(--primary-600)', textDecoration: 'none' }}>
+              <a href={app.source_url} target="_blank" rel="noopener noreferrer"
+                style={{ color: 'var(--primary-600)', textDecoration: 'none' }}>
                 View Posting
               </a>
             </div>
@@ -1524,13 +1552,13 @@ function JobTrackerMain() {
   // Render Kanban view
   const renderKanbanView = () => {
     const statuses = ['Applied', 'Interview', 'Offer', 'Rejected'];
-    
+
     return (
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="kanban-container">
           {statuses.map(status => {
             const statusApps = filteredApplications.filter(app => app.status === status);
-            
+
             return (
               <div key={status} className="kanban-column">
                 <div className="kanban-column-header">
@@ -1613,7 +1641,7 @@ function JobTrackerMain() {
             </button>
           </div>
 
-          <div 
+          <div
             className={`nav-toggle ${isMobileMenuOpen ? 'open' : ''}`}
             onClick={toggleMobileMenu}
           >

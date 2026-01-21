@@ -23,7 +23,7 @@ function App() {
   const createDemoAccount = () => {
     const users = JSON.parse(localStorage.getItem('job_tracker_users')) || [];
     const demoExists = users.some(u => u.email === 'demo@example.com');
-    
+
     if (!demoExists) {
       const demoUser = {
         id: Date.now(),
@@ -46,13 +46,14 @@ function App() {
 
         {/* Login/Signup Page */}
         <Route path="/signup" element={<Signup />} />
+        <Route path="/signin" element={<Signup />} />
 
         {/* Protected Tracker Page - Only if logged in */}
         <Route
           path="/tracker"
           element={
             <ProtectedRoute>
-              <JobTrackerMain/>
+              <JobTrackerMain />
             </ProtectedRoute>
           }
         />
