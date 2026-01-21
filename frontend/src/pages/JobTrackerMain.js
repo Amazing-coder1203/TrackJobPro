@@ -497,7 +497,12 @@ function JobTrackerMain() {
       border-radius: 14px;
       font-size: 1rem;
       transition: all 0.3s ease;
-      background: rgba(255, 255, 255, 0.05);
+      background: #000000;
+      color: white;
+    }
+
+    .form-select option {
+      background: #1a1a1a;
       color: white;
     }
 
