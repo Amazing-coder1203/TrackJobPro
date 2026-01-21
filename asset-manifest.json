@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/TrackJobPro/static/css/main.14395b8f.css",
+    "main.js": "/TrackJobPro/static/js/main.0f2af407.js",
+    "static/js/453.670e15c7.chunk.js": "/TrackJobPro/static/js/453.670e15c7.chunk.js",
+    "index.html": "/TrackJobPro/index.html",
+    "main.14395b8f.css.map": "/TrackJobPro/static/css/main.14395b8f.css.map",
+    "main.0f2af407.js.map": "/TrackJobPro/static/js/main.0f2af407.js.map",
+    "453.670e15c7.chunk.js.map": "/TrackJobPro/static/js/453.670e15c7.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.14395b8f.css",
+    "static/js/main.0f2af407.js"
+  ]
+}
