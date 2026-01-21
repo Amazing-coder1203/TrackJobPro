@@ -414,19 +414,21 @@ function JobTrackerMain() {
     }
 
     .form-container {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: var(--radius-2xl);
-      padding: 2rem;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-2xl);
-      animation: slideInDown 0.6s ease-out;
-      max-height: ${showForm ? '800px' : '0'};
+      padding: 2.5rem;
+      margin-bottom: 3rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: slideInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: ${showForm ? 'none' : '0'};
       overflow: hidden;
       opacity: ${showForm ? '1' : '0'};
       visibility: ${showForm ? 'visible' : 'hidden'};
-      transition: all 0.3s ease;
+      transition: all 0.4s ease-in-out;
+      color: white;
     }
 
     .form-header {
@@ -439,9 +441,10 @@ function JobTrackerMain() {
     }
 
     .form-header h2 {
-      font-size: 1.5rem;
-      color: var(--gray-800);
-      font-weight: 600;
+      font-size: 1.75rem;
+      color: white;
+      font-weight: 700;
+      letter-spacing: -0.025em;
     }
 
     .close-form-btn {
@@ -478,31 +481,32 @@ function JobTrackerMain() {
 
     .form-label {
       font-weight: 600;
-      color: var(--gray-700);
-      margin-bottom: 0.5rem;
-      font-size: 0.875rem;
+      color: var(--gray-400);
+      margin-bottom: 0.625rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.1em;
     }
 
     .form-input,
     .form-select,
     .form-textarea {
-      padding: 0.75rem 1rem;
-      border: 2px solid var(--gray-200);
-      border-radius: var(--radius-lg);
+      padding: 0.875rem 1.25rem;
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
       font-size: 1rem;
       transition: all 0.3s ease;
-      background: white;
-      color: var(--gray-800);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
     }
 
     .form-input:focus,
     .form-select:focus,
     .form-textarea:focus {
       outline: none;
+      background: rgba(255, 255, 255, 0.08);
       border-color: var(--primary-500);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
       transform: translateY(-1px);
     }
 
@@ -515,8 +519,8 @@ function JobTrackerMain() {
       display: flex;
       gap: 1rem;
       justify-content: flex-end;
-      padding-top: 1rem;
-      border-top: 1px solid var(--gray-200);
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .btn {
